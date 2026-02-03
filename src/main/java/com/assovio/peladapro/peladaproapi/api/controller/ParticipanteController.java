@@ -6,9 +6,13 @@ import com.assovio.peladapro.peladaproapi.domain.model.Participante;
 import com.assovio.peladapro.peladaproapi.domain.model.Usuario;
 import com.assovio.peladapro.peladaproapi.domain.service.EventoService;
 import com.assovio.peladapro.peladaproapi.domain.service.UsuarioService;
+
+import lombok.AllArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,20 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin(origins = "*")
+@AllArgsConstructor
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/events")
 public class ParticipanteController {
 
     private final EventoService eventoService;
     private final ParticipanteAssembler participanteAssembler;
     private final UsuarioService usuarioService;
-
-    public ParticipanteController(EventoService eventoService, ParticipanteAssembler participanteAssembler,
-            UsuarioService usuarioService) {
-        this.eventoService = eventoService;
-        this.participanteAssembler = participanteAssembler;
-        this.usuarioService = usuarioService;
-    }
 
     @PostMapping("/{eventId}/join")
     public ResponseEntity<ParticipantOutput> join(@PathVariable UUID eventId,

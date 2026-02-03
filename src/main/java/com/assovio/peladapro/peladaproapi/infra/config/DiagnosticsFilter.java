@@ -28,7 +28,7 @@ public class DiagnosticsFilter extends OncePerRequestFilter {
         long latency = System.currentTimeMillis() - start;
 
         String path = request.getRequestURI();
-        if (path != null && path.startsWith("/api")) {
+        if (path != null && path.startsWith("/")) {
             diagnosticsService.recordRequest(request.getMethod(), path, latency);
         }
     }

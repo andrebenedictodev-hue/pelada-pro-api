@@ -7,26 +7,27 @@ import com.assovio.peladapro.peladaproapi.domain.model.RequestRecord;
 import com.assovio.peladapro.peladaproapi.domain.model.Usuario;
 import com.assovio.peladapro.peladaproapi.domain.service.DiagnosticsService;
 import com.assovio.peladapro.peladaproapi.domain.service.EventoService;
+
+import lombok.AllArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*")
+@AllArgsConstructor
 @RestController
-@RequestMapping("/api/diagnostics")
+@RequestMapping("/diagnostics")
 public class DiagnosticsController {
 
     private final DiagnosticsService diagnosticsService;
     private final EventoService eventoService;
-
-    public DiagnosticsController(DiagnosticsService diagnosticsService, EventoService eventoService) {
-        this.diagnosticsService = diagnosticsService;
-        this.eventoService = eventoService;
-    }
 
     @GetMapping
     public ResponseEntity<DiagnosticsOutput> diagnostics(@AuthenticationPrincipal Usuario usuario) {

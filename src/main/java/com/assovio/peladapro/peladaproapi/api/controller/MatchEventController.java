@@ -11,9 +11,12 @@ import com.assovio.peladapro.peladaproapi.domain.model.Usuario;
 import com.assovio.peladapro.peladaproapi.domain.service.LiveService;
 import com.assovio.peladapro.peladaproapi.domain.service.MatchEventService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,22 +27,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin(origins = "*")
+@AllArgsConstructor
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/events")
 public class MatchEventController {
 
     private final MatchEventService matchEventService;
     private final LiveService liveService;
     private final MatchEventAssembler matchEventAssembler;
     private final LiveStateAssembler liveStateAssembler;
-
-    public MatchEventController(MatchEventService matchEventService, LiveService liveService,
-            MatchEventAssembler matchEventAssembler, LiveStateAssembler liveStateAssembler) {
-        this.matchEventService = matchEventService;
-        this.liveService = liveService;
-        this.matchEventAssembler = matchEventAssembler;
-        this.liveStateAssembler = liveStateAssembler;
-    }
 
     @PostMapping("/{eventId}/match-events")
     public ResponseEntity<MatchEventOutput> create(@PathVariable UUID eventId,

@@ -1,4 +1,4 @@
-﻿package com.assovio.peladapro.peladaproapi.infra.config;
+package com.assovio.peladapro.peladaproapi.infra.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -9,9 +9,12 @@ import com.assovio.peladapro.peladaproapi.domain.model.EventoStatus;
 import com.assovio.peladapro.peladaproapi.domain.model.Usuario;
 import com.assovio.peladapro.peladaproapi.domain.service.EventoService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,17 +25,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin(origins = "*")
+@AllArgsConstructor
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/events")
 public class EventoController {
 
     private final EventoService eventoService;
     private final EventoAssembler eventoAssembler;
-
-    public EventoController(EventoService eventoService, EventoAssembler eventoAssembler) {
-        this.eventoService = eventoService;
-        this.eventoAssembler = eventoAssembler;
-    }
 
     @PostMapping
     public ResponseEntity<EventOutput> create(@AuthenticationPrincipal Usuario usuario,

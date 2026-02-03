@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/")
 public class RankingController {
 
     private final RankingService rankingService;
