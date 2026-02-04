@@ -10,7 +10,7 @@
     <relativePath/>
   </parent>
 
-  <groupId>com.assovio.peladapro</groupId>
+  <groupId>com.ab.peladapro</groupId>
   <artifactId>pelada-pro-api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>pelada-pro-api</name>
