@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "live_state")
+@Table(name = "estado_ao_vivo")
 @SQLRestriction("deleted_at IS NULL")
 public class LiveState extends EntityBase {
 
@@ -24,32 +24,32 @@ public class LiveState extends EntityBase {
     private static final TypeReference<List<List<UUID>>> TEAMS_TYPE = new TypeReference<>() {};
     private static final TypeReference<List<UUID>> UUID_LIST_TYPE = new TypeReference<>() {};
 
-    @Column(name = "event_uuid", nullable = false, unique = true)
+    @Column(name = "evento_uuid", nullable = false, unique = true)
     private String eventId;
 
-    @Column(name = "started_at_server_epoch_ms", nullable = false)
+    @Column(name = "inicio_servidor_epoch_ms", nullable = false)
     private long startedAtServerEpochMs;
 
-    @Column(name = "accumulated_time_ms", nullable = false)
+    @Column(name = "tempo_acumulado_ms", nullable = false)
     private long accumulatedTimeMs;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private LiveStatus status;
 
-    @Column(name = "score_a", nullable = false)
+    @Column(name = "placar_a", nullable = false)
     private int scoreA;
 
-    @Column(name = "score_b", nullable = false)
+    @Column(name = "placar_b", nullable = false)
     private int scoreB;
 
-    @Column(name = "teams_json")
+    @Column(name = "times_json")
     private String teamsJson;
 
-    @Column(name = "queue_json")
+    @Column(name = "fila_json")
     private String queueJson;
 
-    @Column(name = "leaders_json")
+    @Column(name = "lideres_json")
     private String leadersJson;
 
     @Transient

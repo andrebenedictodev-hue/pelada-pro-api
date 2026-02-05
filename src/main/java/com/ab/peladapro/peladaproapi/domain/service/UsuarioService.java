@@ -3,12 +3,8 @@ package com.ab.peladapro.peladaproapi.domain.service;
 import com.ab.peladapro.peladaproapi.domain.exception.EntidadeNaoEncontradaException;
 import com.ab.peladapro.peladaproapi.domain.exception.NaoAutorizadoException;
 import com.ab.peladapro.peladaproapi.domain.exception.NegocioException;
-import com.ab.peladapro.peladaproapi.domain.model.Friendship;
 import com.ab.peladapro.peladaproapi.domain.model.Usuario;
-import com.ab.peladapro.peladaproapi.domain.dao.FriendshipDAO;
-import com.ab.peladapro.peladaproapi.domain.dao.PendingInviteDAO;
 import com.ab.peladapro.peladaproapi.domain.dao.UsuarioDAO;
-import com.ab.peladapro.peladaproapi.domain.model.PendingInvite;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,17 +15,11 @@ import java.util.UUID;
 public class UsuarioService {
 
     private final UsuarioDAO usuarioDAO;
-    private final PendingInviteDAO pendingInviteDAO;
-    private final FriendshipDAO friendshipDAO;
     private final PasswordEncoder passwordEncoder;
 
     public UsuarioService(UsuarioDAO usuarioDAO,
-            PendingInviteDAO pendingInviteDAO,
-            FriendshipDAO friendshipDAO,
             PasswordEncoder passwordEncoder) {
         this.usuarioDAO = usuarioDAO;
-        this.pendingInviteDAO = pendingInviteDAO;
-        this.friendshipDAO = friendshipDAO;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -49,8 +39,6 @@ public class UsuarioService {
         usuario.setSenhaHash(passwordEncoder.encode(password));
 
         usuarioDAO.save(usuario);
-        applyPendingInvites(usuario);
-
         return usuario;
     }
 
@@ -82,26 +70,4 @@ public class UsuarioService {
         return usuarioDAO.findAll();
     }
 
-    private void applyPendingInvites(Usuario usuario) {
-        List<PendingInvite> invites = pendingInviteDAO.findByEmail(usuario.getEmail());
-        List<String> inviters = invites.stream().map(PendingInvite::getInviterId).toList();
-        if (inviters.isEmpty()) {
-            return;
-        }
-        for (String inviterId : inviters) {
-            if (!friendshipDAO.existsByUserIdAndFriendUserId(inviterId, usuario.getUuid())) {
-                Friendship friendship = new Friendship();
-                friendship.setUserId(inviterId);
-                friendship.setFriendUserId(usuario.getUuid());
-                friendshipDAO.save(friendship);
-            }
-            if (!friendshipDAO.existsByUserIdAndFriendUserId(usuario.getUuid(), inviterId)) {
-                Friendship friendship = new Friendship();
-                friendship.setUserId(usuario.getUuid());
-                friendship.setFriendUserId(inviterId);
-                friendshipDAO.save(friendship);
-            }
-        }
-        pendingInviteDAO.deleteByEmail(usuario.getEmail());
-    }
 }

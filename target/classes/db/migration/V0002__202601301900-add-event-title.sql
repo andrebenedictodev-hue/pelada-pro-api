@@ -1,6 +1,6 @@
 ALTER TABLE evento
-  ADD COLUMN title VARCHAR(255) NULL AFTER owner_uuid;
+  ADD COLUMN titulo VARCHAR(255) NULL AFTER organizador_uuid;
 
 UPDATE evento
-  SET title = COALESCE(title, location)
-  WHERE title IS NULL;
+  SET titulo = COALESCE(titulo, local)
+  WHERE titulo IS NULL;

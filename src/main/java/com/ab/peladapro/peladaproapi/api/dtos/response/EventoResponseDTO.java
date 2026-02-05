@@ -15,7 +15,6 @@ public class EventoResponseDTO {
     private EventoType type;
     private EventoStatus status;
     private int maxPlayers;
-    private String inviteCode;
     private EventoSettingsResponseDTO settings;
     private OffsetDateTime createdAt;
     private long participantsCount;
@@ -74,14 +73,6 @@ public class EventoResponseDTO {
 
     public void setMaxPlayers(int maxPlayers) {
         this.maxPlayers = maxPlayers;
-    }
-
-    public String getInviteCode() {
-        return inviteCode;
-    }
-
-    public void setInviteCode(String inviteCode) {
-        this.inviteCode = inviteCode;
     }
 
     public EventoSettingsResponseDTO getSettings() {

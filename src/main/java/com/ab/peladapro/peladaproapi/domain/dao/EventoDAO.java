@@ -10,6 +10,5 @@ import java.util.Optional;
 @Repository
 public interface EventoDAO extends JpaRepository<Evento, Long> {
     Optional<Evento> findFirstByUuid(String uuid);
-    Optional<Evento> findFirstByInviteCode(String inviteCode);
     List<Evento> findByOwnerId(String ownerId);
 }

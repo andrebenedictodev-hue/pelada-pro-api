@@ -175,10 +175,33 @@ public class LiveService {
     public LiveState setLeaders(UUID eventId, List<UUID> leaders) {
         LiveState state = getState(eventId);
         List<UUID> safeLeaders = leaders != null ? leaders : List.of();
-        if (safeLeaders.size() != 2) {
-            throw new NegocioException("Selecione exatamente 2 líderes");
+        if (safeLeaders.isEmpty()) {
+            List<UUID> previousLeaders = state.getLeaders() != null ? new ArrayList<>(state.getLeaders()) : List.of();
+            List<List<UUID>> teams = state.getTeams() != null ? state.getTeams() : new ArrayList<>();
+            List<UUID> queue = state.getQueue() != null ? state.getQueue() : new ArrayList<>();
+            if (!previousLeaders.isEmpty()) {
+                for (UUID leaderId : previousLeaders) {
+                    removeFromAll(teams, queue, leaderId);
+                    if (!queue.contains(leaderId)) {
+                        queue.add(leaderId);
+                    }
+                }
+            }
+            state.setLeaders(new ArrayList<>());
+            state.setTeams(teams);
+            state.setQueue(queue);
+            return liveStateDAO.save(state);
         }
-        if (safeLeaders.get(0).equals(safeLeaders.get(1))) {
+        Evento evento = getEventoOrThrow(eventId);
+        int teamSize = evento.getSettings().getTeamSize();
+        int teamCount = teamSize > 0 ? listParticipantUserIds(eventId).size() / teamSize : 0;
+        if (teamCount < 2) {
+            throw new NegocioException("Não há jogadores suficientes para definir líderes");
+        }
+        if (safeLeaders.size() != teamCount) {
+            throw new NegocioException("Selecione exatamente " + teamCount + " líderes");
+        }
+        if (new HashSet<>(safeLeaders).size() != safeLeaders.size()) {
             throw new NegocioException("Líderes devem ser diferentes");
         }
         Set<UUID> allowed = new HashSet<>(listParticipantUserIds(eventId));
@@ -317,13 +340,13 @@ public class LiveService {
     }
 
     private void ensureLeadersInTeams(UUID eventId, List<UUID> leaders, List<List<UUID>> teams, List<UUID> queue) {
-        if (leaders == null || leaders.size() < 2) {
+        if (leaders == null || leaders.isEmpty()) {
             return;
         }
-        while (teams.size() < 2) {
+        while (teams.size() < leaders.size()) {
             teams.add(new ArrayList<>());
         }
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < leaders.size(); i++) {
             UUID leaderId = leaders.get(i);
             removeFromAll(teams, queue, leaderId);
             teams.get(i).add(leaderId);

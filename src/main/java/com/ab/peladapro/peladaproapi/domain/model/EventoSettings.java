@@ -8,14 +8,14 @@ import jakarta.persistence.Enumerated;
 @Embeddable
 public class EventoSettings {
 
-    @Column(name = "team_size", nullable = false)
+    @Column(name = "tamanho_time", nullable = false)
     private int teamSize;
-    @Column(name = "timer_duration_sec", nullable = false)
+    @Column(name = "duracao_timer_sec", nullable = false)
     private int timerDurationSec;
-    @Column(name = "goals_limit", nullable = false)
+    @Column(name = "limite_gols", nullable = false)
     private int goalsLimit;
     @Enumerated(EnumType.STRING)
-    @Column(name = "mode", nullable = false)
+    @Column(name = "modo", nullable = false)
     private MatchMode mode;
 
     public EventoSettings() {

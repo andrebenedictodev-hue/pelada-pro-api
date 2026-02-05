@@ -7,14 +7,14 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@Table(name = "friendship")
+@Table(name = "amizade")
 @SQLRestriction("deleted_at IS NULL")
 public class Friendship extends EntityBase {
 
-    @Column(name = "user_uuid", nullable = false)
+    @Column(name = "usuario_uuid", nullable = false)
     private String userId;
 
-    @Column(name = "friend_user_uuid", nullable = false)
+    @Column(name = "amigo_usuario_uuid", nullable = false)
     private String friendUserId;
 
     public Friendship() {

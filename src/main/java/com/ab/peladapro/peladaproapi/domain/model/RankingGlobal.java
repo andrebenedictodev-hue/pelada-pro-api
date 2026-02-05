@@ -11,31 +11,31 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted_at IS NULL")
 public class RankingGlobal extends EntityBase {
 
-    @Column(name = "user_uuid", nullable = false, unique = true)
+    @Column(name = "usuario_uuid", nullable = false, unique = true)
     private String userId;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "apelido", nullable = false)
     private String nickname;
 
-    @Column(name = "goals", nullable = false)
+    @Column(name = "gols", nullable = false)
     private int goals;
 
-    @Column(name = "assists", nullable = false)
+    @Column(name = "assistencias", nullable = false)
     private int assists;
 
-    @Column(name = "cards", nullable = false)
+    @Column(name = "cartoes", nullable = false)
     private int cards;
 
-    @Column(name = "points", nullable = false)
+    @Column(name = "pontos", nullable = false)
     private int points;
 
-    @Column(name = "matches", nullable = false)
+    @Column(name = "partidas", nullable = false)
     private int matches;
 
-    @Column(name = "wins", nullable = false)
+    @Column(name = "vitorias", nullable = false)
     private int wins;
 
-    @Column(name = "losses", nullable = false)
+    @Column(name = "derrotas", nullable = false)
     private int losses;
 
     public String getUserId() {

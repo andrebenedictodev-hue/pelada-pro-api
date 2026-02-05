@@ -3,7 +3,7 @@
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
   email VARCHAR(255) NOT NULL UNIQUE,
   senha_hash VARCHAR(255) NOT NULL,
-  nickname VARCHAR(80) NOT NULL UNIQUE,
+  apelido VARCHAR(80) NOT NULL UNIQUE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL
@@ -12,120 +12,108 @@
 CREATE TABLE evento (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  owner_uuid CHAR(36) NOT NULL,
-  location VARCHAR(255) NOT NULL,
-  type ENUM('FUTSAL', 'SOCIETY') NOT NULL,
+  organizador_uuid CHAR(36) NOT NULL,
+  local VARCHAR(255) NOT NULL,
+  tipo ENUM('FUTSAL', 'SOCIETY') NOT NULL,
   status ENUM('UPCOMING', 'LIVE', 'FINISHED') NOT NULL DEFAULT 'UPCOMING',
-  max_players INT NOT NULL,
-  invite_code VARCHAR(20) NOT NULL UNIQUE,
-  team_size INT NOT NULL,
-  timer_duration_sec INT NOT NULL,
-  goals_limit INT NOT NULL,
-  mode ENUM('TEMPO', 'GOLS', 'AMBOS') NOT NULL,
+  max_jogadores INT NOT NULL,
+  tamanho_time INT NOT NULL,
+  duracao_timer_sec INT NOT NULL,
+  limite_gols INT NOT NULL,
+  modo ENUM('TEMPO', 'GOLS', 'AMBOS') NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  FOREIGN KEY (owner_uuid) REFERENCES usuario(uuid)
+  FOREIGN KEY (organizador_uuid) REFERENCES usuario(uuid)
 );
 
 CREATE TABLE participante (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  event_uuid CHAR(36) NOT NULL,
-  user_uuid CHAR(36),
-  guest_name VARCHAR(120),
-  role ENUM('ORGANIZER', 'PLAYER') NOT NULL,
-  joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  evento_uuid CHAR(36) NOT NULL,
+  usuario_uuid CHAR(36),
+  nome_convidado VARCHAR(120),
+  papel ENUM('ORGANIZER', 'PLAYER') NOT NULL,
+  entrou_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  FOREIGN KEY (event_uuid) REFERENCES evento(uuid),
-  FOREIGN KEY (user_uuid) REFERENCES usuario(uuid)
+  FOREIGN KEY (evento_uuid) REFERENCES evento(uuid),
+  FOREIGN KEY (usuario_uuid) REFERENCES usuario(uuid)
 );
 
-CREATE TABLE invite (
+CREATE TABLE amizade (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  event_uuid CHAR(36) NOT NULL,
-  invite_code VARCHAR(20) NOT NULL UNIQUE,
+  usuario_uuid CHAR(36) NOT NULL,
+  amigo_usuario_uuid CHAR(36) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  FOREIGN KEY (event_uuid) REFERENCES evento(uuid)
+  UNIQUE KEY uniq_amizade_par (usuario_uuid, amigo_usuario_uuid),
+  FOREIGN KEY (usuario_uuid) REFERENCES usuario(uuid),
+  FOREIGN KEY (amigo_usuario_uuid) REFERENCES usuario(uuid)
 );
 
-CREATE TABLE friendship (
+CREATE TABLE evento_partida (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  user_uuid CHAR(36) NOT NULL,
-  friend_user_uuid CHAR(36) NOT NULL,
+  evento_uuid CHAR(36) NOT NULL,
+  jogador_uuid CHAR(36) NOT NULL,
+  tipo ENUM('GOAL', 'CARD', 'ASSIST', 'OTHER') NOT NULL,
+  time ENUM('A', 'B') NOT NULL,
+  tempo_partida_ms BIGINT NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  UNIQUE KEY uniq_friendship_pair (user_uuid, friend_user_uuid),
-  FOREIGN KEY (user_uuid) REFERENCES usuario(uuid),
-  FOREIGN KEY (friend_user_uuid) REFERENCES usuario(uuid)
-);
-
-CREATE TABLE match_event (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  event_uuid CHAR(36) NOT NULL,
-  player_uuid CHAR(36) NOT NULL,
-  type ENUM('GOAL', 'CARD', 'ASSIST', 'OTHER') NOT NULL,
-  team ENUM('A', 'B') NOT NULL,
-  match_time_ms BIGINT NOT NULL DEFAULT 0,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP NULL,
-  FOREIGN KEY (event_uuid) REFERENCES evento(uuid),
-  FOREIGN KEY (player_uuid) REFERENCES usuario(uuid)
+  FOREIGN KEY (evento_uuid) REFERENCES evento(uuid),
+  FOREIGN KEY (jogador_uuid) REFERENCES usuario(uuid)
 );
 
 CREATE TABLE ranking_global (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  user_uuid CHAR(36) NOT NULL UNIQUE,
-  nickname VARCHAR(80) NOT NULL,
-  goals INT NOT NULL DEFAULT 0,
-  assists INT NOT NULL DEFAULT 0,
-  cards INT NOT NULL DEFAULT 0,
-  points INT NOT NULL DEFAULT 0,
+  usuario_uuid CHAR(36) NOT NULL UNIQUE,
+  apelido VARCHAR(80) NOT NULL,
+  gols INT NOT NULL DEFAULT 0,
+  assistencias INT NOT NULL DEFAULT 0,
+  cartoes INT NOT NULL DEFAULT 0,
+  pontos INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  FOREIGN KEY (user_uuid) REFERENCES usuario(uuid)
+  FOREIGN KEY (usuario_uuid) REFERENCES usuario(uuid)
 );
 
-CREATE TABLE ranking_event (
+CREATE TABLE ranking_evento (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  event_uuid CHAR(36) NOT NULL,
-  user_uuid CHAR(36) NOT NULL,
-  nickname VARCHAR(80) NOT NULL,
-  goals INT NOT NULL DEFAULT 0,
-  assists INT NOT NULL DEFAULT 0,
-  cards INT NOT NULL DEFAULT 0,
-  points INT NOT NULL DEFAULT 0,
+  evento_uuid CHAR(36) NOT NULL,
+  usuario_uuid CHAR(36) NOT NULL,
+  apelido VARCHAR(80) NOT NULL,
+  gols INT NOT NULL DEFAULT 0,
+  assistencias INT NOT NULL DEFAULT 0,
+  cartoes INT NOT NULL DEFAULT 0,
+  pontos INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  UNIQUE KEY uniq_ranking_event_user (event_uuid, user_uuid),
-  FOREIGN KEY (event_uuid) REFERENCES evento(uuid),
-  FOREIGN KEY (user_uuid) REFERENCES usuario(uuid)
+  UNIQUE KEY uniq_ranking_evento_usuario (evento_uuid, usuario_uuid),
+  FOREIGN KEY (evento_uuid) REFERENCES evento(uuid),
+  FOREIGN KEY (usuario_uuid) REFERENCES usuario(uuid)
 );
 
-CREATE TABLE live_state (
+CREATE TABLE estado_ao_vivo (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid CHAR(36) NOT NULL DEFAULT (UUID()) UNIQUE,
-  event_uuid CHAR(36) NOT NULL UNIQUE,
-  started_at_server_epoch_ms BIGINT NOT NULL DEFAULT 0,
-  accumulated_time_ms BIGINT NOT NULL DEFAULT 0,
+  evento_uuid CHAR(36) NOT NULL UNIQUE,
+  inicio_servidor_epoch_ms BIGINT NOT NULL DEFAULT 0,
+  tempo_acumulado_ms BIGINT NOT NULL DEFAULT 0,
   status ENUM('IDLE', 'RUNNING', 'PAUSED', 'ENDED') NOT NULL DEFAULT 'IDLE',
-  score_a INT NOT NULL DEFAULT 0,
-  score_b INT NOT NULL DEFAULT 0,
+  placar_a INT NOT NULL DEFAULT 0,
+  placar_b INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  FOREIGN KEY (event_uuid) REFERENCES evento(uuid)
+  FOREIGN KEY (evento_uuid) REFERENCES evento(uuid)
 );

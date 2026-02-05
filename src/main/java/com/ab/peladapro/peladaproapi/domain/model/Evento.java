@@ -14,28 +14,25 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("deleted_at IS NULL")
 public class Evento extends EntityBase {
 
-    @Column(name = "owner_uuid", nullable = false)
+    @Column(name = "organizador_uuid", nullable = false)
     private String ownerId;
 
-    @Column(name = "title")
+    @Column(name = "titulo")
     private String title;
 
-    @Column(name = "location", nullable = false)
+    @Column(name = "local", nullable = false)
     private String location;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
+    @Column(name = "tipo", nullable = false)
     private EventoType type;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private EventoStatus status;
 
-    @Column(name = "max_players", nullable = false)
+    @Column(name = "max_jogadores", nullable = false)
     private int maxPlayers;
-
-    @Column(name = "invite_code", nullable = false)
-    private String inviteCode;
 
     @Embedded
     private EventoSettings settings;
@@ -89,14 +86,6 @@ public class Evento extends EntityBase {
 
     public void setMaxPlayers(int maxPlayers) {
         this.maxPlayers = maxPlayers;
-    }
-
-    public String getInviteCode() {
-        return inviteCode;
-    }
-
-    public void setInviteCode(String inviteCode) {
-        this.inviteCode = inviteCode;
     }
 
     public EventoSettings getSettings() {

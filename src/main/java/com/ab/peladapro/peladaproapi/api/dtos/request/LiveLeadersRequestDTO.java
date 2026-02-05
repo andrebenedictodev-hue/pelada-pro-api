@@ -9,7 +9,7 @@ import java.util.UUID;
 public class LiveLeadersRequestDTO {
 
     @NotNull
-    @Size(min = 2, max = 2)
+    @Size(min = 0)
     private List<UUID> leaders;
 
     public List<UUID> getLeaders() {

@@ -2,7 +2,6 @@ package com.ab.peladapro.peladaproapi.domain.service;
 
 import com.ab.peladapro.peladaproapi.api.dtos.request.EventoRequestDTO;
 import com.ab.peladapro.peladaproapi.domain.dao.EventoDAO;
-import com.ab.peladapro.peladaproapi.domain.dao.InviteDAO;
 import com.ab.peladapro.peladaproapi.domain.dao.LiveStateDAO;
 import com.ab.peladapro.peladaproapi.domain.dao.MatchEventDAO;
 import com.ab.peladapro.peladaproapi.domain.dao.ParticipanteDAO;
@@ -12,7 +11,6 @@ import com.ab.peladapro.peladaproapi.domain.exception.NegocioException;
 import com.ab.peladapro.peladaproapi.domain.model.Evento;
 import com.ab.peladapro.peladaproapi.domain.model.EventoSettings;
 import com.ab.peladapro.peladaproapi.domain.model.EventoStatus;
-import com.ab.peladapro.peladaproapi.domain.model.Invite;
 import com.ab.peladapro.peladaproapi.domain.model.Participante;
 import com.ab.peladapro.peladaproapi.domain.model.ParticipanteRole;
 import com.ab.peladapro.peladaproapi.domain.model.Usuario;
@@ -27,7 +25,6 @@ public class EventoService {
 
     private final EventoDAO eventoDAO;
     private final ParticipanteDAO participanteDAO;
-    private final InviteDAO inviteDAO;
     private final LiveService liveService;
     private final MatchEventDAO matchEventDAO;
     private final RankingEventDAO rankingEventDAO;
@@ -35,14 +32,12 @@ public class EventoService {
 
     public EventoService(EventoDAO eventoDAO,
             ParticipanteDAO participanteDAO,
-            InviteDAO inviteDAO,
             LiveService liveService,
             MatchEventDAO matchEventDAO,
             RankingEventDAO rankingEventDAO,
             LiveStateDAO liveStateDAO) {
         this.eventoDAO = eventoDAO;
         this.participanteDAO = participanteDAO;
-        this.inviteDAO = inviteDAO;
         this.liveService = liveService;
         this.matchEventDAO = matchEventDAO;
         this.rankingEventDAO = rankingEventDAO;
@@ -71,15 +66,9 @@ public class EventoService {
         evento.setType(input.getType());
         evento.setStatus(EventoStatus.UPCOMING);
         evento.setMaxPlayers(input.getMaxPlayers());
-        evento.setInviteCode(generateInviteCode());
         evento.setSettings(settings);
 
         eventoDAO.save(evento);
-
-        Invite invite = new Invite();
-        invite.setEventId(evento.getUuid());
-        invite.setInviteCode(evento.getInviteCode());
-        inviteDAO.save(invite);
 
         Participante organizer = new Participante();
         organizer.setEventId(evento.getUuid());
@@ -143,7 +132,6 @@ public class EventoService {
         matchEventDAO.deleteByEventId(evento.getUuid());
         rankingEventDAO.deleteByEventId(evento.getUuid());
         liveStateDAO.deleteByEventId(evento.getUuid());
-        inviteDAO.deleteByInviteCode(evento.getInviteCode());
         eventoDAO.delete(evento);
     }
 
@@ -171,7 +159,4 @@ public class EventoService {
         return !eventoDAO.findByOwnerId(ownerId.toString()).isEmpty();
     }
 
-    private String generateInviteCode() {
-        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
 }

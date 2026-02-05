@@ -23,7 +23,7 @@ public class Usuario extends EntityBase implements UserDetails {
     @Column(name = "senha_hash", nullable = false)
     private String senhaHash;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "apelido", nullable = false)
     private String nickname;
 
     public Usuario() {

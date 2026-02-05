@@ -15,20 +15,20 @@ import java.time.OffsetDateTime;
 @SQLRestriction("deleted_at IS NULL")
 public class Participante extends EntityBase {
 
-    @Column(name = "event_uuid", nullable = false)
+    @Column(name = "evento_uuid", nullable = false)
     private String eventId;
 
-    @Column(name = "user_uuid")
+    @Column(name = "usuario_uuid")
     private String userId;
 
-    @Column(name = "guest_name")
+    @Column(name = "nome_convidado")
     private String guestName;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "papel", nullable = false)
     private ParticipanteRole role;
 
-    @Column(name = "joined_at", nullable = false)
+    @Column(name = "entrou_em", nullable = false)
     private OffsetDateTime joinedAt;
 
     public Participante() {

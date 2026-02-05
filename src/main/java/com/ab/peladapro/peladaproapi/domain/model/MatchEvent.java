@@ -9,25 +9,25 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@Table(name = "match_event")
+@Table(name = "evento_partida")
 @SQLRestriction("deleted_at IS NULL")
 public class MatchEvent extends EntityBase {
 
-    @Column(name = "event_uuid", nullable = false)
+    @Column(name = "evento_uuid", nullable = false)
     private String eventId;
 
-    @Column(name = "player_uuid", nullable = false)
+    @Column(name = "jogador_uuid", nullable = false)
     private String playerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
+    @Column(name = "tipo", nullable = false)
     private MatchEventType type;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "team", nullable = false)
+    @Column(name = "time", nullable = false)
     private MatchTeam team;
 
-    @Column(name = "match_time_ms", nullable = false)
+    @Column(name = "tempo_partida_ms", nullable = false)
     private long matchTimeMs;
 
     public MatchEvent() {
