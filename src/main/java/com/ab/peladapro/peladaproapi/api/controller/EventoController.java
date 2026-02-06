@@ -2,6 +2,7 @@ package com.ab.peladapro.peladaproapi.api.controller;
 
 import com.ab.peladapro.peladaproapi.api.assembler.EventoAssembler;
 import com.ab.peladapro.peladaproapi.api.dtos.request.EventoRequestDTO;
+import com.ab.peladapro.peladaproapi.api.dtos.request.EventoSettingsUpdateRequestDTO;
 import com.ab.peladapro.peladaproapi.api.dtos.response.EventoListResponseDTO;
 import com.ab.peladapro.peladaproapi.api.dtos.response.EventoResponseDTO;
 import com.ab.peladapro.peladaproapi.domain.model.Evento;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -83,5 +85,15 @@ public class EventoController {
     public ResponseEntity<Void> delete(@PathVariable UUID eventId, @AuthenticationPrincipal Usuario usuario) {
         eventoService.deleteEvent(eventId, usuario);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PatchMapping("/{eventId}/settings")
+    public ResponseEntity<EventoResponseDTO> updateSettings(@PathVariable UUID eventId,
+            @AuthenticationPrincipal Usuario usuario,
+            @RequestBody @Valid EventoSettingsUpdateRequestDTO input) {
+        Evento evento = eventoService.updateSettings(eventId, usuario, input);
+        long count = eventoService.countParticipants(eventId);
+        EventoResponseDTO output = eventoAssembler.toDTOWithCount(evento, count);
+        return new ResponseEntity<>(output, HttpStatus.OK);
     }
 }

@@ -4,6 +4,8 @@ import com.ab.peladapro.peladaproapi.api.dtos.request.MatchEventRequestDTO;
 import com.ab.peladapro.peladaproapi.domain.exception.NaoAutorizadoException;
 import com.ab.peladapro.peladaproapi.domain.exception.NegocioException;
 import com.ab.peladapro.peladaproapi.domain.model.Evento;
+import com.ab.peladapro.peladaproapi.domain.model.LiveState;
+import com.ab.peladapro.peladaproapi.domain.model.LiveStatus;
 import com.ab.peladapro.peladaproapi.domain.model.MatchEvent;
 import com.ab.peladapro.peladaproapi.domain.model.MatchEventType;
 import com.ab.peladapro.peladaproapi.domain.model.Usuario;
@@ -36,10 +38,25 @@ public class MatchEventService {
         if (evento == null) {
             throw new NegocioException("Event not found");
         }
+        LiveState liveStateBefore = liveService.getState(eventId);
+        if (liveStateBefore.getStatus() == LiveStatus.ENDED) {
+            throw new NegocioException("Partida encerrada");
+        }
+
+        String assistPlayerId = input.getAssistPlayerId() != null ? input.getAssistPlayerId().toString() : null;
+        if (input.getType() == MatchEventType.GOAL && assistPlayerId != null) {
+            if (assistPlayerId.equals(input.getPlayerId().toString())) {
+                throw new NegocioException("Assistente deve ser diferente do autor do gol");
+            }
+            if (!isParticipant(eventId, assistPlayerId)) {
+                throw new NegocioException("Assistente inválido para este evento");
+            }
+        }
 
         MatchEvent event = new MatchEvent();
         event.setEventId(evento.getUuid());
         event.setPlayerId(input.getPlayerId().toString());
+        event.setAssistPlayerId(input.getType() == MatchEventType.GOAL ? assistPlayerId : null);
         event.setType(input.getType());
         event.setTeam(input.getTeam());
         event.setMatchTimeMs(input.getMatchTimeMs());
@@ -48,10 +65,18 @@ public class MatchEventService {
         rankingService.applyMatchEvent(event);
 
         if (input.getType() == MatchEventType.GOAL) {
-            liveService.applyGoal(eventId, input.getTeam(), 1);
+            LiveState liveStateAfter = liveService.applyGoal(eventId, input.getTeam(), 1);
+            if (liveStateBefore.getStatus() != LiveStatus.ENDED && liveStateAfter.getStatus() == LiveStatus.ENDED) {
+                rankingService.applyMatchResult(eventId, liveStateAfter, list(eventId));
+            }
         }
 
         return event;
+    }
+
+    private boolean isParticipant(UUID eventId, String userId) {
+        return eventoService.listParticipants(eventId).stream()
+                .anyMatch(participante -> userId.equals(participante.getUserId()));
     }
 
     public List<MatchEvent> list(UUID eventId) {

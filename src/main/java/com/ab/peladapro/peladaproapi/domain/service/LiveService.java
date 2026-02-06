@@ -6,6 +6,7 @@ import com.ab.peladapro.peladaproapi.domain.model.Evento;
 import com.ab.peladapro.peladaproapi.domain.model.EventoStatus;
 import com.ab.peladapro.peladaproapi.domain.model.LiveState;
 import com.ab.peladapro.peladaproapi.domain.model.LiveStatus;
+import com.ab.peladapro.peladaproapi.domain.model.MatchMode;
 import com.ab.peladapro.peladaproapi.domain.model.MatchTeam;
 import com.ab.peladapro.peladaproapi.domain.model.Participante;
 import com.ab.peladapro.peladaproapi.domain.dao.EventoDAO;
@@ -46,6 +47,7 @@ public class LiveService {
             newState.setScoreB(0);
             return liveStateDAO.save(newState);
         });
+        state = syncGoalLimitStatus(eventId, state);
         if (state.getStatus() == LiveStatus.RUNNING) {
             updateEventoStatus(eventId, EventoStatus.LIVE);
         } else if (state.getStatus() == LiveStatus.ENDED) {
@@ -57,6 +59,9 @@ public class LiveService {
     public LiveState start(UUID eventId) {
         LiveState state = getState(eventId);
         ensureTeamsReady(eventId, state);
+        if (state.getStatus() == LiveStatus.ENDED) {
+            throw new NegocioException("Partida encerrada");
+        }
         if (state.getStatus() == LiveStatus.RUNNING) {
             updateEventoStatus(eventId, EventoStatus.LIVE);
             return state;
@@ -91,6 +96,103 @@ public class LiveService {
         state.getQueue().clear();
         updateEventoStatus(eventId, EventoStatus.UPCOMING);
         return liveStateDAO.save(state);
+    }
+
+    public LiveState nextMatch(UUID eventId, List<UUID> outgoingPlayers) {
+        LiveState state = getState(eventId);
+        if (state.getStatus() != LiveStatus.ENDED) {
+            throw new NegocioException("Partida atual ainda nao foi encerrada");
+        }
+
+        rotateQueueIntoLosingTeam(state, outgoingPlayers);
+
+        state.setStatus(LiveStatus.IDLE);
+        state.setAccumulatedTimeMs(0);
+        state.setStartedAtServerEpochMs(0);
+        state.setScoreA(0);
+        state.setScoreB(0);
+        updateEventoStatus(eventId, EventoStatus.UPCOMING);
+        return liveStateDAO.save(state);
+    }
+
+    public LiveState addOvertime(UUID eventId, int minutes) {
+        if (minutes <= 0 || minutes > 30) {
+            throw new NegocioException("Acrescimo deve ser entre 1 e 30 minutos");
+        }
+        LiveState state = getState(eventId);
+        if (state.getStatus() != LiveStatus.ENDED) {
+            throw new NegocioException("A partida precisa estar encerrada para adicionar acrescimo");
+        }
+        if (state.getScoreA() != state.getScoreB()) {
+            throw new NegocioException("Acrescimo so e permitido em caso de empate");
+        }
+
+        long extraMs = minutes * 60_000L;
+        state.setAccumulatedTimeMs(Math.max(0, state.getAccumulatedTimeMs() - extraMs));
+        state.setStatus(LiveStatus.PAUSED);
+        state.setStartedAtServerEpochMs(0);
+        updateEventoStatus(eventId, EventoStatus.LIVE);
+        return liveStateDAO.save(state);
+    }
+
+    private void rotateQueueIntoLosingTeam(LiveState state, List<UUID> outgoingPlayers) {
+        int losingTeamIndex = -1;
+        if (state.getScoreA() > state.getScoreB()) {
+            losingTeamIndex = 1;
+        } else if (state.getScoreB() > state.getScoreA()) {
+            losingTeamIndex = 0;
+        }
+        if (losingTeamIndex < 0) {
+            return;
+        }
+
+        List<List<UUID>> teams = state.getTeams() != null ? state.getTeams() : new ArrayList<>();
+        if (losingTeamIndex >= teams.size()) {
+            return;
+        }
+        List<UUID> losingTeam = teams.get(losingTeamIndex);
+        if (losingTeam == null || losingTeam.isEmpty()) {
+            return;
+        }
+
+        List<UUID> queue = state.getQueue() != null ? state.getQueue() : new ArrayList<>();
+        int replaceCount = Math.min(queue.size(), losingTeam.size());
+        if (replaceCount <= 0) {
+            return;
+        }
+
+        List<UUID> outgoing = new ArrayList<>();
+        if (queue.size() >= losingTeam.size()) {
+            outgoing.addAll(losingTeam);
+            losingTeam.clear();
+        } else {
+            List<UUID> requested = outgoingPlayers != null ? outgoingPlayers : List.of();
+            if (requested.size() != replaceCount) {
+                throw new NegocioException("Selecione exatamente " + replaceCount + " jogador(es) para sair");
+            }
+            Set<UUID> unique = new HashSet<>(requested);
+            if (unique.size() != requested.size()) {
+                throw new NegocioException("Jogadores selecionados para sair devem ser diferentes");
+            }
+            for (UUID playerId : requested) {
+                if (!losingTeam.contains(playerId)) {
+                    throw new NegocioException("Jogador selecionado nao pertence ao time perdedor");
+                }
+            }
+            for (UUID playerId : requested) {
+                if (losingTeam.remove(playerId)) {
+                    outgoing.add(playerId);
+                }
+            }
+        }
+
+        List<UUID> incoming = new ArrayList<>(queue.subList(0, replaceCount));
+        losingTeam.addAll(incoming);
+        queue.subList(0, replaceCount).clear();
+        queue.addAll(outgoing);
+
+        state.setTeams(teams);
+        state.setQueue(queue);
     }
 
     public LiveState shuffleTeams(UUID eventId) {
@@ -162,14 +264,39 @@ public class LiveService {
         return liveStateDAO.save(state);
     }
 
-    public void applyGoal(UUID eventId, MatchTeam team, int delta) {
+    public LiveState applyGoal(UUID eventId, MatchTeam team, int delta) {
         LiveState state = getState(eventId);
+        Evento evento = getEventoOrThrow(eventId);
+
         if (team == MatchTeam.A) {
             state.setScoreA(Math.max(0, state.getScoreA() + delta));
         } else {
             state.setScoreB(Math.max(0, state.getScoreB() + delta));
         }
-        liveStateDAO.save(state);
+
+        MatchMode mode = evento.getSettings() != null ? evento.getSettings().getMode() : MatchMode.TEMPO;
+        int goalsLimit = evento.getSettings() != null ? evento.getSettings().getGoalsLimit() : 0;
+        boolean goalModeEnabled = mode == MatchMode.GOLS || mode == MatchMode.AMBOS;
+        int topScore = Math.max(state.getScoreA(), state.getScoreB());
+
+        if (goalModeEnabled && goalsLimit > 0) {
+            if (delta > 0 && topScore >= goalsLimit) {
+                if (state.getStatus() == LiveStatus.RUNNING) {
+                    long now = System.currentTimeMillis();
+                    long elapsed = Math.max(0, now - state.getStartedAtServerEpochMs());
+                    state.setAccumulatedTimeMs(state.getAccumulatedTimeMs() + elapsed);
+                }
+                state.setStatus(LiveStatus.ENDED);
+                state.setStartedAtServerEpochMs(0);
+                updateEventoStatus(eventId, EventoStatus.FINISHED);
+            } else if (delta < 0 && state.getStatus() == LiveStatus.ENDED && topScore < goalsLimit) {
+                state.setStatus(LiveStatus.PAUSED);
+                state.setStartedAtServerEpochMs(0);
+                updateEventoStatus(eventId, EventoStatus.LIVE);
+            }
+        }
+
+        return liveStateDAO.save(state);
     }
 
     public LiveState setLeaders(UUID eventId, List<UUID> leaders) {
@@ -367,6 +494,34 @@ public class LiveService {
     private Evento getEventoOrThrow(UUID eventId) {
         return eventoDAO.findFirstByUuid(eventId.toString())
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Event not found"));
+    }
+
+    private LiveState syncGoalLimitStatus(UUID eventId, LiveState state) {
+        Evento evento = eventoDAO.findFirstByUuid(eventId.toString()).orElse(null);
+        if (evento == null || evento.getSettings() == null) {
+            return state;
+        }
+        MatchMode mode = evento.getSettings().getMode();
+        int goalsLimit = evento.getSettings().getGoalsLimit();
+        boolean goalModeEnabled = mode == MatchMode.GOLS || mode == MatchMode.AMBOS;
+        if (!goalModeEnabled || goalsLimit <= 0) {
+            return state;
+        }
+
+        int topScore = Math.max(state.getScoreA(), state.getScoreB());
+        if (topScore < goalsLimit || state.getStatus() == LiveStatus.ENDED) {
+            return state;
+        }
+
+        if (state.getStatus() == LiveStatus.RUNNING) {
+            long now = System.currentTimeMillis();
+            long elapsed = Math.max(0, now - state.getStartedAtServerEpochMs());
+            state.setAccumulatedTimeMs(state.getAccumulatedTimeMs() + elapsed);
+        }
+        state.setStatus(LiveStatus.ENDED);
+        state.setStartedAtServerEpochMs(0);
+        updateEventoStatus(eventId, EventoStatus.FINISHED);
+        return liveStateDAO.save(state);
     }
 
     private void updateEventoStatus(UUID eventId, EventoStatus status) {

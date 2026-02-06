@@ -19,6 +19,9 @@ public class MatchEvent extends EntityBase {
     @Column(name = "jogador_uuid", nullable = false)
     private String playerId;
 
+    @Column(name = "assistente_uuid")
+    private String assistPlayerId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false)
     private MatchEventType type;
@@ -47,6 +50,14 @@ public class MatchEvent extends EntityBase {
 
     public void setPlayerId(String playerId) {
         this.playerId = playerId;
+    }
+
+    public String getAssistPlayerId() {
+        return assistPlayerId;
+    }
+
+    public void setAssistPlayerId(String assistPlayerId) {
+        this.assistPlayerId = assistPlayerId;
     }
 
     public MatchEventType getType() {

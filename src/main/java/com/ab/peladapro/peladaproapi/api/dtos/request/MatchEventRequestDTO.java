@@ -12,6 +12,8 @@ public class MatchEventRequestDTO {
     @NotNull
     private UUID playerId;
 
+    private UUID assistPlayerId;
+
     @NotNull
     private MatchEventType type;
 
@@ -27,6 +29,14 @@ public class MatchEventRequestDTO {
 
     public void setPlayerId(UUID playerId) {
         this.playerId = playerId;
+    }
+
+    public UUID getAssistPlayerId() {
+        return assistPlayerId;
+    }
+
+    public void setAssistPlayerId(UUID assistPlayerId) {
+        this.assistPlayerId = assistPlayerId;
     }
 
     public MatchEventType getType() {

@@ -1,11 +1,9 @@
 com\ab\peladapro\peladaproapi\api\assembler\UsuarioAssembler.class
 com\ab\peladapro\peladaproapi\common\ModelMapperConfig.class
 com\ab\peladapro\peladaproapi\domain\model\MatchEvent.class
-com\ab\peladapro\peladaproapi\api\dtos\response\InviteResponseDTO.class
 com\ab\peladapro\peladaproapi\api\assembler\MatchEventAssembler.class
 com\ab\peladapro\peladaproapi\domain\model\contracts\EntityBase.class
 com\ab\peladapro\peladaproapi\domain\dao\LiveStateDAO.class
-com\ab\peladapro\peladaproapi\api\assembler\InviteAssembler.class
 com\ab\peladapro\peladaproapi\api\dtos\response\RankingResponseDTO.class
 com\ab\peladapro\peladaproapi\domain\model\LiveState.class
 com\ab\peladapro\peladaproapi\domain\model\MatchMode.class
@@ -29,17 +27,14 @@ com\ab\peladapro\peladaproapi\domain\model\EventoStatus.class
 com\ab\peladapro\peladaproapi\api\dtos\response\AuthResponseDTO.class
 com\ab\peladapro\peladaproapi\api\controller\EventoController.class
 com\ab\peladapro\peladaproapi\api\controller\MatchEventController.class
-com\ab\peladapro\peladaproapi\domain\dao\PendingInviteDAO.class
 com\ab\peladapro\peladaproapi\domain\service\MatchEventService.class
 com\ab\peladapro\peladaproapi\api\controller\RankingController.class
 com\ab\peladapro\peladaproapi\infra\security\JwtAuthFilter.class
 com\ab\peladapro\peladaproapi\domain\service\FriendshipService.class
 com\ab\peladapro\peladaproapi\api\dtos\request\LoginRequestDTO.class
 com\ab\peladapro\peladaproapi\domain\model\RankingEntry.class
-com\ab\peladapro\peladaproapi\api\controller\InviteController.class
 com\ab\peladapro\peladaproapi\infra\config\CorsConfig.class
 com\ab\peladapro\peladaproapi\api\dtos\response\RequestRecordResponseDTO.class
-com\ab\peladapro\peladaproapi\domain\model\PendingInvite.class
 com\ab\peladapro\peladaproapi\domain\exception\EntidadeNaoEncontradaException.class
 com\ab\peladapro\peladaproapi\domain\dao\UsuarioDAO.class
 com\ab\peladapro\peladaproapi\domain\model\Evento.class
@@ -57,7 +52,6 @@ com\ab\peladapro\peladaproapi\domain\model\ParticipanteRole.class
 com\ab\peladapro\peladaproapi\domain\service\DiagnosticsService.class
 com\ab\peladapro\peladaproapi\api\assembler\EventoAssembler.class
 com\ab\peladapro\peladaproapi\api\dtos\response\EventoResponseDTO.class
-com\ab\peladapro\peladaproapi\domain\dao\InviteDAO.class
 com\ab\peladapro\peladaproapi\domain\model\MatchEventType.class
 com\ab\peladapro\peladaproapi\api\dtos\request\EventoSettingsRequestDTO.class
 com\ab\peladapro\peladaproapi\infra\security\SecurityConfig.class
@@ -71,7 +65,6 @@ com\ab\peladapro\peladaproapi\domain\dao\EventoDAO.class
 com\ab\peladapro\peladaproapi\domain\exception\ConflictOperationException.class
 com\ab\peladapro\peladaproapi\api\dtos\response\UsuarioSearchResponseDTO.class
 com\ab\peladapro\peladaproapi\domain\service\LiveService.class
-com\ab\peladapro\peladaproapi\domain\model\Invite.class
 com\ab\peladapro\peladaproapi\domain\service\RankingService.class
 com\ab\peladapro\peladaproapi\domain\model\LiveStatus.class
 com\ab\peladapro\peladaproapi\domain\service\UsuarioService.class
@@ -79,8 +72,6 @@ com\ab\peladapro\peladaproapi\api\dtos\response\EventoSettingsResponseDTO.class
 com\ab\peladapro\peladaproapi\api\dtos\response\RankingEntryResponseDTO.class
 com\ab\peladapro\peladaproapi\api\dtos\response\LiveStateResponseDTO.class
 com\ab\peladapro\peladaproapi\common\error\ApiError$FieldError.class
-com\ab\peladapro\peladaproapi\domain\service\InviteService.class
-com\ab\peladapro\peladaproapi\api\dtos\request\FriendInviteRequestDTO.class
 com\ab\peladapro\peladaproapi\api\dtos\response\EventoListResponseDTO.class
 com\ab\peladapro\peladaproapi\domain\dao\RankingGlobalDAO.class
 com\ab\peladapro\peladaproapi\domain\model\Friendship.class

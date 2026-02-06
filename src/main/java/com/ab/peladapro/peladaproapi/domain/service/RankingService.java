@@ -46,6 +46,7 @@ public class RankingService {
         applyDelta(perEvent, event, 1);
         rankingGlobalDAO.save(global);
         rankingEventDAO.save(perEvent);
+        applyAssistDeltaForGoal(event, 1);
     }
 
     public void undoMatchEvent(MatchEvent event) {
@@ -55,6 +56,7 @@ public class RankingService {
         applyDelta(perEvent, event, -1);
         rankingGlobalDAO.save(global);
         rankingEventDAO.save(perEvent);
+        applyAssistDeltaForGoal(event, -1);
     }
 
     public List<RankingEntry> getGlobal() {
@@ -198,6 +200,25 @@ public class RankingService {
         } else {
             entry.setPoints(entry.getPoints() + (0 * multiplier));
         }
+    }
+
+    private void applyAssistDeltaForGoal(MatchEvent event, int multiplier) {
+        if (event.getType() != MatchEventType.GOAL) {
+            return;
+        }
+        String assistPlayerId = event.getAssistPlayerId();
+        if (assistPlayerId == null || assistPlayerId.isBlank()) {
+            return;
+        }
+
+        RankingGlobal global = getOrCreateGlobal(assistPlayerId);
+        RankingEvent perEvent = getOrCreateEvent(event.getEventId(), assistPlayerId);
+        global.setAssists(global.getAssists() + (1 * multiplier));
+        global.setPoints(global.getPoints() + (1 * multiplier));
+        perEvent.setAssists(perEvent.getAssists() + (1 * multiplier));
+        perEvent.setPoints(perEvent.getPoints() + (1 * multiplier));
+        rankingGlobalDAO.save(global);
+        rankingEventDAO.save(perEvent);
     }
 
     private void applyMatchStats(RankingGlobal entry, boolean draw, boolean won) {

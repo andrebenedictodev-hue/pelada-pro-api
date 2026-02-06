@@ -1,6 +1,7 @@
 package com.ab.peladapro.peladaproapi.domain.service;
 
 import com.ab.peladapro.peladaproapi.api.dtos.request.EventoRequestDTO;
+import com.ab.peladapro.peladaproapi.api.dtos.request.EventoSettingsUpdateRequestDTO;
 import com.ab.peladapro.peladaproapi.domain.dao.EventoDAO;
 import com.ab.peladapro.peladaproapi.domain.dao.LiveStateDAO;
 import com.ab.peladapro.peladaproapi.domain.dao.MatchEventDAO;
@@ -133,6 +134,36 @@ public class EventoService {
         rankingEventDAO.deleteByEventId(evento.getUuid());
         liveStateDAO.deleteByEventId(evento.getUuid());
         eventoDAO.delete(evento);
+    }
+
+    public Evento updateSettings(UUID eventId, Usuario organizer, EventoSettingsUpdateRequestDTO input) {
+        if (organizer == null) {
+            throw new NegocioException("Not authorized");
+        }
+        Evento evento = getById(eventId);
+        if (!evento.getOwnerId().equals(organizer.getUuid())) {
+            throw new NegocioException("Only organizer can update event settings");
+        }
+        EventoSettings settings = evento.getSettings();
+        if (settings == null) {
+            throw new NegocioException("Event settings not found");
+        }
+
+        boolean changed = false;
+        if (input.getTimerDurationSec() != null) {
+            settings.setTimerDurationSec(input.getTimerDurationSec());
+            changed = true;
+        }
+        if (input.getGoalsLimit() != null) {
+            settings.setGoalsLimit(input.getGoalsLimit());
+            changed = true;
+        }
+        if (!changed) {
+            throw new NegocioException("No settings provided to update");
+        }
+
+        evento.setSettings(settings);
+        return eventoDAO.save(evento);
     }
 
     public void removeParticipant(UUID eventId, UUID targetUserId, Usuario organizer) {

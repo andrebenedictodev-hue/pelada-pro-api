@@ -11,6 +11,7 @@ public class MatchEventResponseDTO {
     private UUID id;
     private UUID eventId;
     private UUID playerId;
+    private UUID assistPlayerId;
     private MatchEventType type;
     private MatchTeam team;
     private long matchTimeMs;
@@ -38,6 +39,14 @@ public class MatchEventResponseDTO {
 
     public void setPlayerId(UUID playerId) {
         this.playerId = playerId;
+    }
+
+    public UUID getAssistPlayerId() {
+        return assistPlayerId;
+    }
+
+    public void setAssistPlayerId(UUID assistPlayerId) {
+        this.assistPlayerId = assistPlayerId;
     }
 
     public MatchEventType getType() {

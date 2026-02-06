@@ -3,6 +3,8 @@ package com.ab.peladapro.peladaproapi.api.controller;
 import com.ab.peladapro.peladaproapi.api.assembler.LiveStateAssembler;
 import com.ab.peladapro.peladaproapi.api.assembler.MatchEventAssembler;
 import com.ab.peladapro.peladaproapi.api.dtos.request.LiveLeadersRequestDTO;
+import com.ab.peladapro.peladaproapi.api.dtos.request.LiveNextMatchRequestDTO;
+import com.ab.peladapro.peladaproapi.api.dtos.request.LiveOvertimeRequestDTO;
 import com.ab.peladapro.peladaproapi.api.dtos.request.LiveTeamsRequestDTO;
 import com.ab.peladapro.peladaproapi.api.dtos.request.MatchEventRequestDTO;
 import com.ab.peladapro.peladaproapi.api.dtos.response.LiveStateResponseDTO;
@@ -101,6 +103,24 @@ public class MatchEventController {
         LiveState state = liveService.end(eventId);
         List<MatchEvent> events = matchEventService.list(eventId);
         rankingService.applyMatchResult(eventId, state, events);
+        return new ResponseEntity<>(liveStateAssembler.toOutput(state), HttpStatus.OK);
+    }
+
+    @PostMapping("/{eventId}/live/next-match")
+    public ResponseEntity<LiveStateResponseDTO> nextMatch(@PathVariable UUID eventId,
+            @RequestBody(required = false) LiveNextMatchRequestDTO input,
+            @AuthenticationPrincipal Usuario usuario) {
+        authorizeOrganizer(eventId, usuario);
+        LiveState state = liveService.nextMatch(eventId, input != null ? input.getOutgoingPlayerIds() : null);
+        return new ResponseEntity<>(liveStateAssembler.toOutput(state), HttpStatus.OK);
+    }
+
+    @PostMapping("/{eventId}/live/overtime")
+    public ResponseEntity<LiveStateResponseDTO> addOvertime(@PathVariable UUID eventId,
+            @RequestBody @Valid LiveOvertimeRequestDTO input,
+            @AuthenticationPrincipal Usuario usuario) {
+        authorizeOrganizer(eventId, usuario);
+        LiveState state = liveService.addOvertime(eventId, input.getMinutes());
         return new ResponseEntity<>(liveStateAssembler.toOutput(state), HttpStatus.OK);
     }
 
